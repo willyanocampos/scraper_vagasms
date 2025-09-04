@@ -1,0 +1,28 @@
+# Core Dependencies
+selenium>=4.15.0
+beautifulsoup4>=4.12.0
+pandas>=2.0.0
+requests>=2.31.0
+customtkinter>=5.2.0
+matplotlib>=3.7.0
+folium>=0.14.0
+psutil>=5.9.0
+aiohttp>=3.8.0
+
+# Optional Dependencies for Advanced Features
+geopandas>=0.13.0  # Geographic data analysis
+lxml>=4.9.0        # Fast XML/HTML parser
+html5lib>=1.1      # HTML5 parser
+openpyxl>=3.1.0    # Excel file support
+
+# Development Dependencies (optional)
+pytest>=7.4.0      # Testing framework
+pytest-asyncio>=0.21.0  # Async testing
+black>=23.0.0      # Code formatter
+flake8>=6.0.0      # Code linter
+mypy>=1.5.0        # Type checker
+
+# System Dependencies Notes:
+# - Google Chrome or Chromium browser required for Selenium
+# - python3-psutil system package recommended on Linux
+# - tkinter usually comes with Python but may need separate install on some systems
