@@ -4,7 +4,6 @@
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-Ativo-green.svg)](https://github.com/seu-usuario/scrapper-vagasms)
-[![Licença](https://img.shields.io/badge/Licença-MIT-yellow.svg)](LICENSE)
 
 ## 📋 Sobre o Projeto
 
@@ -334,71 +333,6 @@ tail -f logs/scraper_$(date +%Y%m%d).log
 python3 -c "from selenium import webdriver; print('Selenium OK')"
 ```
 
-## 🤝 Contribuição
-
-### 📝 Como Contribuir
-
-1. **Fork** o repositório
-2. **Crie** uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** para a branch (`git push origin feature/AmazingFeature`)
-5. **Abra** um Pull Request
-
-### 🎯 Áreas de Contribuição
-
-- **🔍 Novos Scrapers**: Adicionar suporte a mais empresas/plataformas
-- **🎨 Interface**: Melhorar UX/UI da aplicação desktop
-- **📊 Análises**: Implementar novas visualizações e insights
-- **🗺️ Mapas**: Adicionar recursos geográficos avançados
-- **🔧 Performance**: Otimizar velocidade e consumo de recursos
-- **📚 Documentação**: Melhorar docs e exemplos
-
-### 📋 Padrões de Código
-
-- **PEP 8** para formatação Python
-- **Type hints** obrigatórios em funções públicas
-- **Docstrings** detalhadas para classes e métodos
-- **Testes unitários** para funcionalidades críticas
-- **Logs estruturados** para debugging
-
-## 📄 Licença
-
-Este projeto está licenciado sob a **MIT License** - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 🆘 Suporte
-
-### 📞 Canais de Suporte
-
-- **Issues**: [GitHub Issues](https://github.com/seu-usuario/scrapper-vagasms/issues)
-- **Discussões**: [GitHub Discussions](https://github.com/seu-usuario/scrapper-vagasms/discussions)
-- **Email**: seu.email@exemplo.com
-
-### ❓ FAQ
-
-**P: O scraper funciona 24/7?**  
-R: Sim, mas recomenda-se intervalos para respeitar rate limits dos sites.
-
-**P: Posso adicionar mais empresas?**  
-R: Sim! Edite o arquivo `data/json_portais_carreiras_ms.json`.
-
-**P: Os mapas funcionam offline?**  
-R: Não, requerem conexão para carregar tiles do Leaflet.
-
-**P: Há limites de coleta?**  
-R: O sistema respeita robots.txt e implementa rate limiting ético.
-
----
-
-## 📊 Estatísticas do Projeto
-
-- **📁 Arquivos Python**: 6 principais + 5 módulos auxiliares
-- **📏 Linhas de Código**: ~4.000+ linhas
-- **🏢 Empresas Suportadas**: 141+ portais
-- **📍 Cidades Cobertas**: 28 cidades MS
 - **🎯 Precisão Geográfica**: >95% para localização MS
-
----
-
-**Desenvolvido com ❤️ para o mercado de trabalho de Mato Grosso do Sul**
 
 *Última atualização: Setembro 2024*
