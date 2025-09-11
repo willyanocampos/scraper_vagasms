@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import logging
 import threading
 import time
 from pathlib import Path
@@ -28,7 +29,7 @@ try:
     GEOPANDAS_AVAILABLE = True
 except ImportError:
     GEOPANDAS_AVAILABLE = False
-    print("⚠️ GeoPandas não encontrado. Usando fallback para matplotlib básico.")
+    logging.warning("GeoPandas não encontrado. Usando fallback para matplotlib básico.")
 
 from enhanced_filters import EnhancedJobFilter
 from accurate_ms_map_data import AccurateMSMapData
@@ -40,6 +41,12 @@ if sys.platform.startswith('win'):
     if hasattr(sys.stderr, 'reconfigure'):
         sys.stderr.reconfigure(encoding='utf-8')
     os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class DataManager:
     
@@ -67,47 +74,47 @@ class DataManager:
                 else:
                     callback()
             except Exception as e:
-                print(f"Error in callback: {e}")
+                logger.error(f"Error in callback: {e}")
     
     def load_data(self) -> bool:
         try:
             output_dir = Path("output")
-            print(f"🔍 Looking for data files in: {output_dir.absolute()}")
+            logger.info(f"Looking for data files in: {output_dir.absolute()}")
             
             if not output_dir.exists():
-                print("⚠️ Output directory not found, creating it...")
+                logger.warning("Output directory not found, creating it...")
                 output_dir.mkdir(exist_ok=True)
             
             json_files = list(output_dir.glob("unified_ms_jobs_*.json")) + list(output_dir.glob("ms_jobs_*.json"))
             csv_files = list(output_dir.glob("unified_ms_jobs_*.csv")) + list(output_dir.glob("ms_jobs_*.csv"))
             
-            print(f"📄 Found {len(json_files)} JSON files and {len(csv_files)} CSV files")
+            logger.info(f"Found {len(json_files)} JSON files and {len(csv_files)} CSV files")
             
             if json_files:
                 latest_json = max(json_files, key=lambda x: x.stat().st_mtime)
-                print(f"🏆 Using latest JSON file: {latest_json.name}")
+                logger.info(f"Using latest JSON file: {latest_json.name}")
                 return self._load_from_json(latest_json)
             
             elif csv_files:
                 latest_csv = max(csv_files, key=lambda x: x.stat().st_mtime)
-                print(f"🏆 Using latest CSV file: {latest_csv.name}")
+                logger.info(f"Using latest CSV file: {latest_csv.name}")
                 return self._load_from_csv(latest_csv)
             
             else:
-                print("⚠️ No output files found, trying frontend data...")
+                logger.warning("No output files found, trying frontend data...")
                 return self._load_from_frontend_data()
             
         except Exception as e:
-            print(f"❌ Error loading data: {e}")
+            logger.error(f"Error loading data: {e}")
             import traceback
-            print(traceback.format_exc())
+            logger.error(traceback.format_exc())
             self.jobs_data = []
             self.summary_data = {}
             return False
     
     def _load_from_json(self, json_file: Path) -> bool:
         try:
-            print(f"📄 Loading from JSON: {json_file.name}")
+            logger.info(f"Loading from JSON: {json_file.name}")
             
             with open(json_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -132,22 +139,22 @@ class DataManager:
             
             self.summary_data = self._generate_summary()
             self.current_source_file = str(json_file)
-            print(f"✅ Loaded {len(self.jobs_data)} jobs from JSON")
+            logger.info(f"Loaded {len(self.jobs_data)} jobs from JSON")
             self.notify_callbacks()
             return True
             
         except Exception as e:
-            print(f"❌ Error loading JSON file: {e}")
+            logger.error(f"Error loading JSON file: {e}")
             return False
     
     def _load_from_csv(self, csv_file: Path) -> bool:
         try:
-            print(f"📄 Loading from CSV: {csv_file.name}")
+            logger.info(f"Loading from CSV: {csv_file.name}")
             
             try:
                 import pandas as pd
             except ImportError:
-                print("⚠️ pandas not available, trying manual CSV parsing")
+                logger.warning("pandas not available, trying manual CSV parsing")
                 return self._load_csv_manual(csv_file)
             
             df = pd.read_csv(csv_file, encoding='utf-8')
@@ -157,12 +164,12 @@ class DataManager:
             self.summary_data = self._generate_summary()
             self.current_source_file = str(csv_file)
             
-            print(f"✅ Loaded {len(self.jobs_data)} jobs from CSV")
+            logger.info(f"Loaded {len(self.jobs_data)} jobs from CSV")
             self.notify_callbacks()
             return True
             
         except Exception as e:
-            print(f"❌ Error loading CSV file: {e}")
+            logger.error(f"Error loading CSV file: {e}")
             return False
     
     def _load_csv_manual(self, csv_file: Path) -> bool:
@@ -177,12 +184,12 @@ class DataManager:
             self.summary_data = self._generate_summary()
             self.current_source_file = str(csv_file)
             
-            print(f"✅ Loaded {len(self.jobs_data)} jobs from CSV (manual parsing)")
+            logger.info(f"Loaded {len(self.jobs_data)} jobs from CSV (manual parsing)")
             self.notify_callbacks()
             return True
             
         except Exception as e:
-            print(f"❌ Error with manual CSV parsing: {e}")
+            logger.error(f"Error with manual CSV parsing: {e}")
             return False
     
     def _load_from_frontend_data(self) -> bool:

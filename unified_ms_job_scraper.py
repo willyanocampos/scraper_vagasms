@@ -1,6 +1,7 @@
 import time
 import sys
 import os
+import logging
 from urllib.parse import urljoin
 import pandas as pd
 from selenium import webdriver
@@ -39,6 +40,16 @@ if sys.platform.startswith('win'):
     
     os.environ['PYTHONIOENCODING'] = 'utf-8'
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('scraper.log', encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
 class ScrapingConfiguration:
     def __init__(self):
         self.max_companies = None
@@ -60,7 +71,8 @@ class ScrapingConfiguration:
             memory_limited_workers = int(memory_gb * 2)
             
             return min(optimal_workers, memory_limited_workers, 16)
-        except:
+        except (OSError, AttributeError, ImportError) as e:
+            logger.warning(f"Could not detect optimal workers: {e}")
             return 6
     
     def enable_full_power_mode(self):
@@ -277,7 +289,7 @@ class EnhancedURLExtractor:
                     href = link_element.get('href')
                     if href and href not in ['#', 'javascript:void(0)', 'javascript:;']:
                         return href
-            except:
+            except (AttributeError, TypeError, KeyError):
                 continue
         
         return None
@@ -296,10 +308,10 @@ class EnhancedURLExtractor:
                     href = approach()
                     if href and href not in ['#', 'javascript:void(0)', 'javascript:;']:
                         return href
-                except:
+                except (AttributeError, TypeError, KeyError):
                     continue
                     
-        except:
+        except (AttributeError, TypeError, KeyError, IndexError):
             pass
         
         return None
@@ -753,7 +765,8 @@ class DetailedJobExtractor:
             driver = webdriver.Chrome(options=chrome_options)
             driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
             return driver
-        except:
+        except Exception as e:
+            logger.error(f"Failed to create WebDriver: {e}")
             return None
     
     def worker_thread(self, vagas_batch, thread_id, total_vagas):
@@ -814,8 +827,8 @@ class DetailedJobExtractor:
             if driver:
                 try:
                     driver.quit()
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Failed to quit WebDriver: {e}")
     
     def extract_job_details_with_driver(self, driver, job_url):
         try:
