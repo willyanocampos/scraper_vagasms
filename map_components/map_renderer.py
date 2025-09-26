@@ -151,52 +151,73 @@ class MapRenderer:
                         iconSize: new L.Point(40, 40)
                     });
                 }
-        Create individual location marker
+                """
+            )
+        except Exception as e:
+            logger.error(f"Error creating marker cluster: {e}")
+            return plugins.MarkerCluster()
+
+    def _create_location_marker(self, 
+                              location_name: str, 
+                              location_data: Dict, 
+                              popup_generator) -> Optional[folium.Marker]:
         
-        Args:
-            location_name: Name of the location
-            location_data: Location data dictionary
-            popup_generator: PopupGenerator instance
-            
-        Returns:
-            Folium marker or None
-        Get marker style based on sector and job count
+        coordinates = location_data.get('coordinates')
+        if not coordinates:
+            coordinates = self._get_default_coordinates(location_name)
         
-        Args:
-            sector: Dominant job sector
-            job_count: Number of jobs
+        if not coordinates:
+            logger.warning(f"Could not find coordinates for {location_name}")
+            return None
             
-        Returns:
-            Style dictionary for marker
-        Convert hex color to folium-compatible color
+        popup_content = popup_generator.create_location_popup(location_data) if popup_generator else self._create_basic_popup(location_data)
         
-        Args:
-            hex_color: Hex color code
-            
-        Returns:
-            Folium color name
-        Get appropriate icon based on job count
+        marker_style = self._get_marker_style(
+            location_data.get('dominant_sector', 'Outros'),
+            location_data.get('job_count', 1)
+        )
+
+        marker = folium.Marker(
+            location=coordinates,
+            popup=folium.Popup(popup_content, max_width=400),
+            tooltip=f"{location_name}: {location_data.get('job_count', 0)} vagas",
+            icon=folium.Icon(
+                color=marker_style['color'],
+                icon=marker_style['icon'],
+                prefix='fa'
+            )
+        )
+        return marker
+
+    def _get_marker_style(self, sector: str, job_count: int) -> Dict[str, str]:
+        if self.style_manager:
+            return self.style_manager.get_marker_style(sector, job_count)
         
-        Args:
-            job_count: Number of jobs
-            
-        Returns:
-            Icon name
-        Get default coordinates for known Brazilian cities
-        
-        Args:
-            location_name: Name of the location
-            
-        Returns:
-            Tuple of (latitude, longitude) or None
-        Create basic popup HTML when PopupGenerator is not available
-        
-        Args:
-            location_data: Location data dictionary
-            
-        Returns:
-            Basic HTML popup content
-            
+        return {
+            'color': 'blue',
+            'icon': 'briefcase'
+        }
+
+    def _get_default_coordinates(self, location_name: str) -> Optional[Tuple[float, float]]:
+        # This can be expanded with a proper geocoding service or a larger local database
+        known_locations = {
+            "Campo Grande": [-20.442778, -54.646389],
+            "Dourados": [-22.221944, -54.805556],
+            "Três Lagoas": [-20.751111, -51.678333],
+            "Corumbá": [-19.009444, -57.653056],
+        }
+        return known_locations.get(location_name)
+
+    def _create_basic_popup(self, location_data: Dict) -> str:
+        try:
+            location = location_data.get('location', 'Localização')
+            job_count = location_data.get('job_count', 0)
+            html = f"""
+            <div>
+                <h4>{location}</h4>
+                <p>{job_count} vagas disponíveis</p>
+            </div>
+            """
             return html
             
         except Exception as e:

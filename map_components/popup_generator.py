@@ -32,18 +32,20 @@ class PopupGenerator:
                 {self._generate_popup_styles()}
                 {self._generate_popup_scripts()}
             </div>
-        Get popup theme configuration
-        
-        Returns:
-            Theme dictionary
-        Get container styling
-        
-        Args:
-            theme: Theme configuration
-            
-        Returns:
-            CSS style string
-    
+            """
+            return html_content
+        except Exception as e:
+            logger.error(f"Error creating location popup for {location_data.get('location')}: {e}")
+            return self._create_error_popup(location_data.get('location', ''))
+
+    def _get_popup_theme(self) -> Dict[str, str]:
+        return {
+            'header_bg': 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+        }
+
+    def _get_container_style(self, theme: Dict[str, str]) -> str:
+        return "width: 380px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;"
+
     def _generate_header(self, location_name: str, job_count: int, theme: Dict[str, str]) -> str:
         return f"""
         <div class="popup-header" style="
@@ -72,18 +74,11 @@ class PopupGenerator:
                 </span>
             </div>
         </div>
-        Generate statistics section
-        
-        Args:
-            statistics: Statistics data
-            
-        Returns:
-            Statistics HTML
-            
-        except Exception as e:
-            logger.warning(f"Error generating statistics section: {e}")
-            return ""
-    
+        """
+
+    def _generate_statistics_section(self, statistics: Dict[str, Any]) -> str:
+        return ""
+
     def _generate_sectors_section(self, sectors: Dict[str, int]) -> str:
         try:
             if not sectors:
@@ -102,7 +97,7 @@ class PopupGenerator:
                     justify-content: space-between;
                     align-items: center;
                     padding: 6px 0;
-                    border-bottom: 1px solid
+                    border-bottom: 1px solid #e5e7eb;
                 ">
                     <div style="display: flex; align-items: center;">
                         <div style="
@@ -119,7 +114,7 @@ class PopupGenerator:
                     <div style="display: flex; align-items: center;">
                         <span style="
                             font-size: 13px;
-                            color:
+                            color: #6b7280;
                             margin-right: 8px;
                         ">
                             {percentage}%
@@ -136,7 +131,8 @@ class PopupGenerator:
                         </span>
                     </div>
                 </div>
-            
+                """)
+            return "<div style='padding: 12px 20px;'>" + "".join(sectors_html) + "</div>"
         except Exception as e:
             logger.warning(f"Error generating sectors section: {e}")
             return ""
@@ -158,7 +154,7 @@ class PopupGenerator:
                 companies_html.append(f"""
                 <div class="company-item" style="
                     padding: 10px 0;
-                    border-bottom: 1px solid
+                    border-bottom: 1px solid #e5e7eb;
                     cursor: pointer;
                     transition: background-color 0.2s;
                 " onmouseover="this.style.backgroundColor='#f8fafc'" 
@@ -169,20 +165,20 @@ class PopupGenerator:
                             <div style="
                                 font-size: 14px;
                                 font-weight: 500;
-                                color:
+                                color: #1f2937;
                                 margin-bottom: 2px;
                             ">
                                 {html.escape(company_name)}
                             </div>
                             <div style="
                                 font-size: 12px;
-                                color:
+                                color: #6b7280;
                             ">
                                 {html.escape(sectors_text)}
                             </div>
                         </div>
                         <div style="
-                            background-color:
+                            background-color: #3b82f6;
                             color: white;
                             padding: 3px 8px;
                             border-radius: 12px;
@@ -195,7 +191,8 @@ class PopupGenerator:
                         </div>
                     </div>
                 </div>
-            
+                """)
+            return "<div style='padding: 0 20px;'>" + "".join(companies_html) + "</div>"
         except Exception as e:
             logger.warning(f"Error generating companies section: {e}")
             return ""
@@ -207,13 +204,13 @@ class PopupGenerator:
                 <h4 style="
                     margin: 0;
                     font-size: 16px;
-                    color:
+                    color: #1f2937;
                     font-weight: 600;
                 ">
                     Detalhes das Vagas
                 </h4>
                 <button id="load-jobs-btn" onclick="loadLocationJobs('{html.escape(location_name)}')" style="
-                    background: linear-gradient(135deg,
+                    background: linear-gradient(135deg, #3b82f6, #60a5fa);
                     color: white;
                     border: none;
                     padding: 8px 16px;
@@ -234,9 +231,9 @@ class PopupGenerator:
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                color:
+                color: #6b7280;
                 font-style: italic;
-                background:
+                background: #f9fafb;
                 border-radius: 6px;
                 padding: 20px;
                 text-align: center;
@@ -249,9 +246,9 @@ class PopupGenerator:
                     display: inline-block;
                     width: 20px;
                     height: 20px;
-                    border: 3px solid
+                    border: 3px solid #e5e7eb;
                     border-radius: 50%;
-                    border-top-color:
+                    border-top-color: #3b82f6;
                     animation: spin 1s ease-in-out infinite;
                 "></div>
                 <div style="margin-top: 10px; color: #6b7280; font-size: 13px;">
@@ -259,10 +256,16 @@ class PopupGenerator:
                 </div>
             </div>
         </div>
-        Generate CSS styles for popup
-        
-        Returns:
-            CSS styles in <style> tag
+        """
+
+    def _generate_popup_styles(self) -> str:
+        return """
+        <style>
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+        </style>
+        """
     
     def _generate_popup_scripts(self) -> str:
         return """
@@ -272,12 +275,10 @@ class PopupGenerator:
                 const content = document.getElementById('jobs-content');
                 const loading = document.getElementById('loading-indicator');
                 
-                // Show loading state
                 btn.style.display = 'none';
                 content.style.display = 'none';
                 loading.style.display = 'block';
                 
-                // Simulate API call (replace with actual implementation)
                 setTimeout(() => {
                     content.innerHTML = generateJobsHTML(locationName);
                     loading.style.display = 'none';
@@ -287,11 +288,9 @@ class PopupGenerator:
             
             function loadCompanyJobs(locationName, companyName) {
                 console.log('Loading jobs for company:', companyName, 'in', locationName);
-                // Implement company-specific job loading
             }
             
             function generateJobsHTML(locationName) {
-                // This should be replaced with actual job data loading
                 return `
                     <div class="job-card">
                         <div class="job-title">Exemplo de Vaga</div>
@@ -310,49 +309,22 @@ class PopupGenerator:
                 `;
             }
         </script>
-        Create HTML for individual job card
-        
-        Args:
-            job: Job data dictionary
-            
-        Returns:
-            Job card HTML
-            
-        except Exception as e:
-            logger.error(f"Error creating job card HTML: {e}")
+        """
+
+    def create_job_card_html(self, job: Dict[str, Any]) -> str:
+        try:
             return f"""
             <div class="job-card">
-                <div class="job-title">Erro ao carregar vaga</div>
+                <div class="job-title">{html.escape(job.get('titulo', ''))}</div>
                 <div style="color: #ef4444; font-size: 12px;">
                     {html.escape(str(e))}
                 </div>
             </div>
-        Generate HTML for all jobs in a location
-        
-        Args:
-            location_data: Location data dictionary
-            company_filter: Optional company name to filter by
-            
-        Returns:
-            Jobs HTML content
-            
-            jobs = jobs[:20]
-            
-            jobs_html = [self.create_job_card_html(job) for job in jobs]
-            
-            total_count = len(location_data.get('jobs', []))
-            showing_count = len(jobs)
-            
-            result = ''.join(jobs_html)
-            
-            if showing_count < total_count:
-                result += f"""
-                <div style="text-align: center; padding: 15px; color: #6b7280; font-size: 13px;">
-                    Mostrando {showing_count} de {total_count} vagas
-                    <br>
-                    <small>Carregamento otimizado para melhor performance</small>
-                </div>
-    
+            """
+        except Exception as e:
+            logger.error(f"Error creating job card HTML: {e}")
+            return ""
+
     def _get_sector_color(self, sector: str) -> str:
         if self.style_manager:
             return self.style_manager.get_sector_color(sector)
@@ -383,7 +355,7 @@ class PopupGenerator:
         <div style="
             padding: 20px;
             text-align: center;
-            color:
+            color: #374151;
             font-family: Arial, sans-serif;
         ">
             <h4 style="margin: 0 0 10px 0; color: #dc2626;">
@@ -393,3 +365,4 @@ class PopupGenerator:
                 Não foi possível carregar os dados para {html.escape(location_name)}
             </p>
         </div>
+        """
